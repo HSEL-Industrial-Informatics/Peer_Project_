@@ -1,0 +1,831 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{float}
+\usepackage{balance}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    columns=fullflexible,
+    showstringspaces=false
+}
+
+\title{Active Learning of OPC UA Behavioural State Machines Using AALpy}
+
+\author{
+\IEEEauthorblockN{Altaf Ahmad}
+\IEEEauthorblockA{
+Master's Programme in Industrial Informatics\\
+Hochschule Emden/Leer, Germany
+}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+OPC Unified Architecture (OPC UA) is widely used for communication in
+industrial automation systems. This project investigates the behavioural
+modelling of an OPC UA server using active automata learning. The Prosys
+OPC UA Simulation Server is used as the main system under learning, while
+a Python-based client harness communicates with the server and AALpy
+performs Mealy machine learning using the L* algorithm. The experiment
+covers connection management, address-space browsing, data access,
+subscriptions, and monitored items. Secure communication is configured
+using Basic256Sha256 with SignAndEncrypt and username authentication.
+Wireshark captures are also analysed to examine the OPC UA communication
+observed during the experiments. A separate OPC UA validation server is
+used to perform additional tests and compare the behaviour of the client
+implementation.
+\end{abstract}
+
+\begin{IEEEkeywords}
+OPC UA, Active Automata Learning, Mealy Machine, AALpy, L* Algorithm,
+Industrial Communication, Wireshark, Protocol Analysis
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+OPC Unified Architecture (OPC UA) provides a standardised communication
+framework for exchanging information between industrial devices,
+controllers, and software applications. It supports services such as
+endpoint discovery, secure communication, browsing, reading, writing,
+and subscriptions. Understanding how an OPC UA server responds to
+different sequences of client operations is important for testing,
+interoperability, and industrial system integration.
+
+This project applies active automata learning to investigate the
+observable behaviour of an OPC UA server. The Prosys OPC UA Simulation
+Server is used as the main target, and a Python client implemented with
+\texttt{asyncua} communicates with it. AALpy is used to learn a Mealy
+machine from the observed input and output sequences. UAExpert is used
+for manual inspection and testing, while Wireshark is used to capture
+and analyse the communication traffic. A second OPC UA server is also
+used for validation.
+
+\section{Background}
+
+\subsection{OPC Unified Architecture}
+
+OPC UA is a platform-independent industrial communication standard
+developed by the OPC Foundation. It provides a common framework for
+communication between devices and applications from different
+manufacturers. Its architecture includes services for discovering
+servers, establishing secure communication, managing sessions,
+accessing address spaces, exchanging data, and receiving notifications
+\cite{opcuaoverview,opcua_part4}.
+
+The OPC UA address space represents information through nodes and
+references. Objects are commonly used to organise information, while
+variables contain values and attributes that can be accessed by
+clients. A client can browse the address space to discover available
+nodes, read variable values, and write values when the corresponding
+permissions allow it.
+
+OPC UA subscriptions provide a mechanism for receiving data changes
+without continuously polling the server. A subscription can contain
+multiple monitored items, each associated with a node or attribute.
+The server sends notifications when monitored values change. These
+operations are particularly relevant to this project because the
+existence and deletion of subscriptions and monitored items affect the
+observable state of the client-server interaction.
+
+\subsection{OPC UA Security}
+
+OPC UA provides security mechanisms for protecting communication
+between clients and servers. These mechanisms include application
+authentication, user authentication, message integrity, and message
+confidentiality. The main Prosys experiment uses the Basic256Sha256
+security policy with the SignAndEncrypt message security mode.
+
+The client application uses a certificate and its corresponding
+private key. The server must trust the client certificate before
+accepting the secure application connection. In addition to
+certificate-based application security, username authentication is
+configured for the client session. These two mechanisms serve different
+purposes: the certificate identifies the client application, whereas
+the username token identifies the user.
+
+The certificate, private key, and authentication credentials are
+maintained in the local project configuration. Sensitive authentication
+information is not included in this report.
+
+\subsection{Active Automata Learning}
+
+Active automata learning is a technique for inferring finite-state
+models from the observable behaviour of a system. The learner interacts
+with the system by providing input sequences and recording the
+corresponding outputs. Based on these observations, it constructs a
+hypothesis model that represents the behaviour exposed through the
+selected operations.
+
+This project uses a Mealy machine. A Mealy machine is defined as
+
+\[
+M=(Q,\Sigma,\Gamma,\delta,\lambda,q_0)
+\]
+
+where $Q$ represents the set of states, $\Sigma$ is the input alphabet,
+$\Gamma$ is the output alphabet, $\delta$ is the transition function,
+$\lambda$ is the output function, and $q_0$ is the initial state.
+
+The L* learning approach is used through the AALpy Python library.
+The learner observes the responses returned by the OPC UA client
+harness and uses them to construct the state machine. The resulting
+model describes the observable behaviour of the configured
+client-server system for the selected input alphabet.
+
+\section{Experimental Setup}
+
+\subsection{Main Experimental Environment}
+
+The Prosys OPC UA Simulation Server is used as the main system under
+learning. The server and client computers communicate through an
+Ethernet/LAN connection. The Python learning application runs on the
+client computer and connects to the OPC UA server using the configured
+endpoint.
+
+The client application is implemented using the \texttt{asyncua}
+Python library. It performs the OPC UA operations required by the
+learning experiment and converts their results into symbolic outputs.
+AALpy uses these outputs to learn the behavioural model.
+
+UAExpert is used as an independent OPC UA client for manual inspection
+of the server. It helps verify the available endpoints, security
+policies, address-space structure, and selected operations such as
+reading, writing, browsing, and subscription creation. UAExpert is
+not responsible for performing the active learning process. The
+learning process is carried out by AALpy through the Python harness.
+
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm and 0.9cm,
+    block/.style={
+        draw,
+        rounded corners,
+        align=center,
+        minimum width=2.5cm,
+        minimum height=0.8cm
+    },
+    arr/.style={-{Latex},thick}
+]
+\node[block] (client) {Python OPC UA\\Learning Harness};
+\node[block,right=of client] (server) {Prosys OPC UA\\Simulation Server};
+\node[block,below=of client] (aalpy) {AALpy\\L* Learning};
+\node[block,below=of server] (uaexpert) {UAExpert\\Manual Testing};
+\node[block,below=of aalpy] (dot) {Mealy Machine\\Graphviz Output};
+
+\draw[arr] (client) -- node[above,font=\scriptsize]{OPC UA communication} (server);
+\draw[arr] (aalpy) -- node[left,font=\scriptsize]{Input sequences} (client);
+\draw[arr] (client) -- node[above left,font=\scriptsize]{Observed outputs} (aalpy);
+\draw[arr] (uaexpert) -- node[right,font=\scriptsize]{Manual inspection} (server);
+\draw[arr] (aalpy) -- (dot);
+\end{tikzpicture}
+\caption{Architecture of the main OPC UA learning experiment.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Software and Tools}
+
+The experiment combines several tools for communication, learning,
+manual testing, and network analysis. Python and \texttt{asyncua} are
+used to implement the OPC UA client. AALpy performs active automata
+learning and generates the Mealy machine. Prosys provides the main
+simulation server, while UAExpert is used to inspect and test the
+server independently. Wireshark captures network traffic, and
+Graphviz is used to render the learned state machine.
+
+\begin{table}[!t]
+\centering
+\caption{Software and tools used}
+\label{tab:tools}
+\begin{tabular}{p{0.28\columnwidth}p{0.62\columnwidth}}
+\toprule
+\textbf{Tool} & \textbf{Purpose}\\
+\midrule
+Prosys Simulation Server & Main OPC UA server under learning\\
+Python & Implementation of the client harness\\
+asyncua & OPC UA client communication\\
+AALpy & Active automata learning\\
+UAExpert & Manual testing and endpoint inspection\\
+Wireshark & Network traffic capture and analysis\\
+Graphviz & State-machine visualisation\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Secure Client Connection}
+
+The Python client is configured to connect to the Prosys server using
+Basic256Sha256 and SignAndEncrypt. The client certificate and private
+key are loaded during connection setup, and the certificate is
+configured as trusted by the server. Username authentication is also
+enabled.
+
+After configuring the security parameters, the client establishes
+the secure connection and activates the OPC UA session. The harness
+then performs service operations to verify that communication is
+available. The same security configuration is used during the
+learning experiment, subject to the endpoint and server settings
+configured for the test environment.
+
+The exact endpoint address, certificate paths, and credentials are
+deployment-specific and are therefore not reproduced in this report.
+
+\section{Input Alphabet and Output Definition}
+
+\subsection{Input Alphabet}
+
+The learning experiment uses twelve input symbols. Each symbol
+represents an operation that the Python client can perform against
+the OPC UA server. These operations cover connection management,
+address-space browsing, data access, and subscription management.
+
+\begin{table*}[!t]
+\centering
+\caption{Input alphabet of the OPC UA learning experiment}
+\label{tab:alphabet}
+\begin{tabular}{p{0.20\textwidth}p{0.73\textwidth}}
+\toprule
+\textbf{Input Symbol} & \textbf{Description}\\
+\midrule
+\texttt{CONNECT} & Establishes the OPC UA client connection and activates the session.\\
+\texttt{DISCONNECT} & Disconnects the client and clears the maintained resource state.\\
+\texttt{QUERY\_STATE} & Returns the current abstract state maintained by the client harness.\\
+\texttt{READ} & Reads the value or selected attribute of the configured node.\\
+\texttt{WRITE} & Attempts to write the current value back to the selected node and identifies whether the operation is accepted or rejected.\\
+\texttt{BROWSE} & Browses the children of the Objects node.\\
+\texttt{BROWSE\_DEEP} & Browses the configured Simulation folder and examines its children.\\
+\texttt{GET\_STATUS} & Reads the configured status node, identified in the implementation by NodeId \texttt{i=2259}.\\
+\texttt{CREATE\_SUB} & Creates a subscription using a publishing interval of 1000 ms.\\
+\texttt{DELETE\_SUB} & Deletes the subscription and removes any associated monitored item.\\
+\texttt{CREATE\_MON} & Creates a monitored item for data changes on the selected node.\\
+\texttt{DELETE\_MON} & Deletes the monitored item if it exists.\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+The selected alphabet is designed to examine the main OPC UA operations
+required by the project. It does not represent every service defined
+by the OPC UA specification. Instead, it focuses on operations whose
+execution and resource dependencies can be represented through a
+finite-state model.
+
+\subsection{Output Symbols}
+
+The client harness converts the result of each operation into a
+symbolic output. Successful operations can return labels such as
+\texttt{CONNECT\_OK}, \texttt{DISCONNECT\_OK}, \texttt{READ\_OK},
+\texttt{WRITE\_OK}, \texttt{BROWSE\_OK}, \texttt{CREATE\_SUB\_OK},
+and \texttt{CREATE\_MON\_OK}.
+
+The harness also identifies conditions in which an operation cannot
+be performed. Examples include \texttt{ALREADY\_CONNECTED},
+\texttt{NOT\_CONNECTED}, \texttt{SUB\_EXISTS}, \texttt{NO\_SUB},
+and \texttt{NO\_MON}. Additional error labels are returned when
+reading, writing, browsing, or creating resources fails.
+
+The output labels are based on the result observed by the client
+implementation. For example, a write operation may be rejected
+because a node is read-only or because the authenticated user does
+not have sufficient permissions. Therefore, the model includes both
+successful and unsuccessful operation outcomes.
+
+\section{State Model and Learning Methodology}
+
+\subsection{State Representation}
+
+The client harness maintains three Boolean variables to represent
+the logical state of the browsing and subscription resources. The
+first variable, $B$, indicates whether a successful browsing operation
+has been completed. The second variable, $S$, indicates whether a
+subscription exists. The third variable, $M$, indicates whether a
+monitored item exists.
+
+The monitored-item state depends on the subscription state because
+a monitored item is created within a subscription. Consequently,
+the normal operation of the harness does not produce a monitored
+item without an existing subscription.
+
+When the client is disconnected, the state is represented by
+\texttt{DISC}. When connected, the three Boolean variables are
+represented using the labels shown in Table~\ref{tab:states}.
+
+\begin{table}[!t]
+\centering
+\caption{Seven states represented by the client harness}
+\label{tab:states}
+\begin{tabular}{lll}
+\toprule
+\textbf{State} & \textbf{Flags} & \textbf{Description}\\
+\midrule
+\texttt{DISC} & -- & Client disconnected\\
+\texttt{S000} & 000 & Connected, no resources created\\
+\texttt{S100} & 100 & Browsing completed\\
+\texttt{S010} & 010 & Subscription exists\\
+\texttt{S110} & 110 & Browsing and subscription exist\\
+\texttt{S011} & 011 & Subscription and monitored item exist\\
+\texttt{S111} & 111 & All three conditions are active\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The state labels are derived from the values of the three flags
+maintained by the implementation. The combinations in which a
+monitored item exists without a subscription are not reachable through
+the normal resource-creation sequence because the harness requires
+an existing subscription before creating a monitored item.
+
+\subsection{State Transitions}
+
+After a successful connection, the client enters \texttt{S000}.
+A successful browsing operation changes the browsing flag from zero
+to one while preserving the subscription and monitored-item flags.
+Similarly, a successful subscription creation changes the subscription
+flag to one. A monitored item can then be created, changing the
+monitored-item flag to one.
+
+Deleting a monitored item clears the monitored-item flag while
+preserving the subscription. Deleting a subscription also removes
+the associated monitored item and clears both resource flags.
+Disconnecting the client returns the state to \texttt{DISC}.
+
+The transitions are determined by the operations and their observed
+outputs. Repeated operations can produce self-loops when they do not
+change the current resource configuration. For example, attempting
+to create a subscription when one already exists returns
+\texttt{SUB\_EXISTS}. Attempting to create a monitored item without
+a subscription returns \texttt{NO\_SUB}. Similarly, deleting a
+monitored item that does not exist returns \texttt{NO\_MON}.
+
+A connection attempt while the client is already connected returns
+\texttt{ALREADY\_CONNECTED}. Operations that require an active
+connection return \texttt{NOT\_CONNECTED} when the client is
+disconnected. The \texttt{QUERY\_STATE} operation reports
+\texttt{DISC} when no active connection exists.
+
+\subsection{AALpy Learning Procedure}
+
+The Python harness implements the system-under-learning interface
+required by AALpy. The learning algorithm submits sequences of input
+symbols to the harness, and the harness executes the corresponding
+OPC UA operations. The symbolic outputs are returned to AALpy and
+used to construct the Mealy machine.
+
+The implementation uses AALpy's \texttt{run\_Lstar} function with
+the Mealy machine configuration. A random-walk equivalence oracle
+is used to test the current hypothesis using additional sequences.
+The relevant learning configuration is shown below.
+
+\begin{lstlisting}[language=Python,caption={AALpy learning configuration}]
+eq_oracle = RandomWalkEqOracle(
+    alphabet=alphabet,
+    sul=sul,
+    num_steps=200,
+    reset_after_cex=True,
+    reset_prob=0.1
+)
+
+model = run_Lstar(
+    alphabet=alphabet,
+    sul=sul,
+    eq_oracle=eq_oracle,
+    automaton_type="mealy",
+    cache_and_non_det_check=True,
+    print_level=2
+)
+\end{lstlisting}
+
+The random-walk equivalence oracle generates additional input
+sequences to check whether the current hypothesis produces outputs
+consistent with the system. The learning process continues using
+the observations collected from these sequences. Since the oracle
+uses a finite number of tests, it provides practical testing rather
+than a formal mathematical proof of equivalence.
+
+\subsection{Model Generation}
+
+After the learning procedure finishes, the implementation extracts
+the states and transitions from the model returned by AALpy. The
+states are assigned readable labels, and the transition information
+is converted into Graphviz DOT format. The resulting DOT file is
+saved as \texttt{final\_state\_machine.dot}.
+
+The generated DOT file is used to create the visual representation
+of the learned state machine. The following command can be used to
+export the graph as a PDF.
+
+\begin{lstlisting}[language=bash]
+dot -Tpdf final_state_machine.dot \
+    -o prosys_learned_graph.pdf
+\end{lstlisting}
+
+The Graphviz output is used to examine the transitions, output
+symbols, and state changes identified during the learning process.
+
+\section{Connection Recovery Mechanism}
+
+During the Prosys experiment, the client implementation observed
+that the connection could become unavailable after the
+\texttt{CREATE\_SUB} operation under the configured encrypted
+connection and username-authentication setup. This behaviour was
+observed in the tested environment and was handled within the
+Python client harness.
+
+To detect the connection condition, the implementation uses the
+\texttt{\_safe\_ping()} function. When the connection is found to be
+unavailable, the \texttt{\_reconnect\_preserve\_state()} procedure
+attempts to establish a new connection. It then recreates the
+subscription and monitored item when the corresponding logical
+flags indicate that these resources should exist.
+
+This mechanism allows the learning process to continue while
+maintaining the logical resource state represented by the harness.
+However, the original server-side subscription object is not
+necessarily preserved after the connection is lost. The client
+re-establishes communication and recreates the required resources.
+Therefore, the recovery procedure maintains the logical state of
+the experiment rather than the identity of the original server-side
+subscription.
+
+The implementation also uses a limited number of retries and
+short delays around selected operations. These measures help the
+client handle asynchronous communication and resource-creation
+operations during the experiment.
+
+\section{Prosys OPC UA Learning Results}
+
+The main learning experiment is performed against the Prosys OPC UA
+Simulation Server. The Python harness executes the selected input
+alphabet and records the corresponding output symbols. AALpy uses
+these observations to construct the Mealy machine, which is then
+exported into Graphviz DOT format.
+
+The resulting graph represents the behaviour observed during the
+Prosys learning experiment. It shows the state transitions associated
+with connection establishment, browsing, subscription creation,
+monitored-item creation, and resource deletion. The output labels
+also indicate how the client implementation responds to repeated
+operations and operations attempted in an invalid connection or
+resource state.
+
+The generated Prosys graph is included in Fig.~\ref{fig:prosys}.
+It should be the actual Graphviz output obtained from the
+\texttt{final\_state\_machine.dot} file generated by the learning
+implementation.
+
+\begin{figure*}[!t]
+\centering
+\IfFileExists{prosys_learned_graph.pdf}{
+    \includegraphics[
+        width=0.96\textwidth,
+        height=0.72\textheight,
+        keepaspectratio
+    ]{prosys_learned_graph.pdf}
+}{
+    \fbox{
+        \parbox[c][5cm][c]{0.92\textwidth}{
+            \centering
+            \textbf{Insert the Prosys learned state-machine graph here.}\\[0.5em]
+            Export the actual Prosys DOT graph as\\
+            \texttt{prosys\_learned\_graph.pdf}.
+        }
+    }
+}
+\caption{Learned OPC UA behavioural state machine for the Prosys
+Simulation Server.}
+\label{fig:prosys}
+\end{figure*}
+
+The state transitions show how the client moves between different
+logical resource configurations. A successful connection establishes
+the initial connected state. Browsing changes the browsing flag,
+while subscription and monitored-item operations change the
+corresponding resource flags. Deletion operations return the client
+to states in which the relevant resources no longer exist.
+
+The output labels are important because two operations performed
+in different states may produce different results even when the
+input symbol is identical. For example, \texttt{CREATE\_MON} can
+create a monitored item when a subscription exists, whereas the
+same operation returns \texttt{NO\_SUB} when no subscription is
+available. This distinction is represented through the transition
+outputs of the Mealy machine.
+
+\section{Wireshark Network Traffic Analysis}
+
+Wireshark is used to capture the network communication generated
+during the OPC UA experiments. The captured traffic is saved in
+PCAP format. These PCAP files are subsequently exported from
+Wireshark into CSV format for further analysis using a Python
+analysis script.
+
+The CSV files contain information extracted from the original
+network captures. The Python script examines the exported fields
+and classifies recognised OPC UA communication entries into
+different categories. The analysis covers channel setup, session
+management, discovery, address-space browsing, data access,
+subscription services, and service faults.
+
+The analysis script processed twelve CSV files in the reported
+run. One expected file, \texttt{capture\_04.csv}, was not available
+in that analysis. Across the twelve processed files, the script
+identified 3,677 recognised entries. The category distribution
+is presented in Table~\ref{tab:wireshark}.
+
+\begin{table}[!t]
+\centering
+\caption{Wireshark CSV analysis results}
+\label{tab:wireshark}
+\begin{tabular}{lr}
+\toprule
+\textbf{Category} & \textbf{Recognised entries}\\
+\midrule
+TCP / Channel Setup & 260\\
+Session Management & 78\\
+Discovery & 78\\
+Address-Space Browsing & 402\\
+Data Access & 874\\
+Subscription Services & 1,971\\
+Service Faults & 14\\
+\midrule
+\textbf{Total} & \textbf{3,677}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The subscription category contains the largest number of recognised
+entries. It includes CreateSubscription requests and responses,
+DeleteSubscriptions requests and responses, CreateMonitoredItems
+requests and responses, DeleteMonitoredItems requests and responses,
+and Publish messages. The data-access category includes recognised
+Read and Write requests and responses. Address-space browsing
+entries are classified from Browse requests and responses.
+
+The detailed parser output also identifies 260 channel-setup
+entries, 78 session-management entries, 78 discovery entries,
+402 address-space browsing entries, 874 data-access entries,
+1,971 subscription-service entries, and 14 service faults. These
+values represent the entries recognised by the Python classification
+script from the CSV exports. They should not be interpreted as the
+total number of packets in the original PCAP files.
+
+The available captures include earlier experimental scenarios and
+later captures named \texttt{new7.csv}, \texttt{new8.csv}, and
+\texttt{new9.csv}. The earlier captures contribute 3,535 recognised
+entries, while the three later files contribute 142 recognised
+entries. Since the dataset contains captures from different
+experimental configurations, the combined total of 3,677 should
+not be described as exclusively encrypted communication.
+
+The CSV analysis script also uses filename-dependent logic to
+identify certain security-related captures. Its existing condition
+refers to filenames containing \texttt{new5} and \texttt{new6},
+whereas the later files in this analysis are named
+\texttt{new7}, \texttt{new8}, and \texttt{new9}. Therefore, the
+security classification should be checked against the actual
+capture configuration before making per-file comparisons.
+
+The Wireshark analysis provides additional information about the
+communication observed during the experiments. It complements the
+state-machine learning results by showing the recognised OPC UA
+service activity in the captured traffic. However, the network
+analysis and the learned state machine represent different views
+of the experiment: the state machine is constructed from the
+client harness inputs and outputs, while the CSV analysis examines
+information extracted from the recorded network traffic.
+
+\section{Validation Using a Separate OPC UA Server}
+
+A second OPC UA server is used as a separate validation environment.
+This server is implemented using the \texttt{asyncua} Python
+library and is configured independently of the Prosys Simulation
+Server. Its endpoint is
+\texttt{opc.tcp://127.0.0.1:4841/validation/server/}.
+
+The validation server uses Basic256Sha256 with SignAndEncrypt and
+username authentication. Its address space contains a
+\texttt{ValidationDevice} object with two main folders:
+\texttt{Sensors} and \texttt{Controls}. The Sensors folder contains
+the variables \texttt{Temperature}, \texttt{RPM}, and
+\texttt{Moisture}. The Controls folder contains
+\texttt{MotorRunning} and \texttt{TemperatureSetpoint}.
+
+The sensor variables are configured as read-only, while the
+control variables are writable. The sensor values are updated
+periodically by the server, with a two-second update interval.
+This arrangement provides a controlled environment for testing
+read operations, write permissions, browsing, and subscriptions.
+
+UAExpert is also used to connect to the validation server and
+inspect its address space. This allows the client configuration
+and selected OPC UA services to be tested independently of the
+Prosys environment.
+
+The state-machine graph associated with the validation experiment
+is shown in Fig.~\ref{fig:validation}. This figure should contain
+the graph generated from the separate validation experiment.
+It must remain distinct from the Prosys learned graph because
+the two servers have different implementations and address-space
+configurations.
+
+\begin{figure*}[!t]
+\centering
+\IfFileExists{validation_learned_graph.pdf}{
+    \includegraphics[
+        width=0.96\textwidth,
+        height=0.72\textheight,
+        keepaspectratio
+    ]{validation_learned_graph.pdf}
+}{
+    \fbox{
+        \parbox[c][5cm][c]{0.92\textwidth}{
+            \centering
+            \textbf{Insert the validation-server state-machine graph here.}\\[0.5em]
+            Export the graph from the separate validation experiment as\\
+            \texttt{validation\_learned\_graph.pdf}.
+        }
+    }
+}
+\caption{State-machine graph for the separate OPC UA validation server.}
+\label{fig:validation}
+\end{figure*}
+
+The validation environment provides an additional test case for
+examining the behaviour of the OPC UA client implementation.
+The read-only sensor variables and writable control variables
+allow the client to encounter different access conditions.
+The validation results can therefore be examined separately
+from the results obtained with the Prosys Simulation Server.
+
+\section{Discussion}
+
+The project demonstrates how active automata learning can be
+applied to an OPC UA client-server environment. The Python harness
+provides a structured interface for executing OPC UA operations
+and converting their results into symbolic outputs. AALpy uses
+these observations to construct a Mealy machine representing the
+behaviour exposed through the selected operations.
+
+The state representation focuses on connection status, browsing,
+subscription existence, and monitored-item existence. These
+conditions provide a manageable way to describe the resource
+lifecycle during the experiment. The input alphabet includes
+operations that create, inspect, and delete these resources,
+allowing the learning process to identify differences between
+valid and invalid operation sequences.
+
+The connection recovery mechanism is an important implementation
+feature. The observed connection interruption around subscription
+creation could otherwise affect subsequent learning operations.
+By checking the connection and recreating the required resources,
+the harness attempts to maintain a consistent logical state.
+However, this approach also means that the learned behaviour
+includes the recovery strategy implemented by the client.
+
+The Wireshark analysis provides a separate view of the experiment.
+The PCAP captures record the network communication, and the CSV
+exports allow the analysis script to classify recognised entries.
+The results show activity across several OPC UA service categories,
+with subscription-related entries forming the largest category
+in the reported analysis.
+
+The separate validation server provides a controlled environment
+for further testing. Its known address-space structure and
+different access permissions make it possible to examine client
+operations under conditions that are distinct from the Prosys
+Simulation Server. Keeping the two experiments separate is
+important when interpreting their state-machine graphs and
+observed outputs.
+
+\section{Limitations and Future Work}
+
+The current experiment focuses on a selected set of OPC UA
+operations rather than the complete OPC UA service specification.
+Other services, security events, server resource limits, session
+timeouts, and secure-channel renewal are outside the current
+input alphabet. The output abstraction also groups some detailed
+service results into symbolic labels, which simplifies learning
+but may hide distinctions between individual OPC UA status codes.
+
+The random-walk equivalence oracle tests the learned hypothesis
+using a finite number of sequences. It does not provide a formal
+proof that the learned model is equivalent to the complete server
+implementation. Additional test sequences, repeated learning
+runs, and alternative equivalence-testing strategies could
+increase confidence in the model.
+
+The recovery mechanism also introduces a distinction between
+the logical state maintained by the client and the actual
+server-side resource lifecycle. Further experiments could
+compare learning runs with recovery enabled and disabled.
+Additional tests could investigate the effects of session expiry,
+server restart, subscription deletion, and changes in security
+configuration.
+
+The Wireshark analysis could be extended by improving the CSV
+classification script and correlating the timestamps of network
+messages with the input sequences submitted by AALpy. This would
+make it easier to relate individual state-machine transitions
+to the corresponding network communication. The capture
+classification could also be improved to identify security
+configurations from verified capture metadata rather than
+filename-dependent conditions.
+
+\section{Conclusion}
+
+This project investigates the use of active automata learning
+to model the observable behaviour of an OPC UA server. The
+Prosys OPC UA Simulation Server is used as the main system
+under learning, and a Python client harness implemented with
+\texttt{asyncua} provides the interface for executing OPC UA
+operations. AALpy applies the L* learning approach to construct
+a Mealy machine from the observed input and output sequences.
+
+The experiment covers connection management, browsing, data
+access, subscription creation, monitored-item creation, and
+resource deletion. Secure communication is configured using
+Basic256Sha256 with SignAndEncrypt and username authentication.
+A connection recovery mechanism is included to handle the
+connection interruption observed during subscription creation
+in the tested environment.
+
+Wireshark is used to capture the network communication in PCAP
+format, and the captured files are exported to CSV for analysis.
+The Python analysis script identifies 3,677 recognised entries
+across the twelve CSV files processed in the reported run.
+The analysis provides an additional view of the OPC UA services
+observed during the experiments.
+
+Finally, a separate \texttt{asyncua}-based validation server is
+used to test the client implementation in a controlled
+environment. The Prosys and validation experiments are presented
+separately to preserve the distinction between their configurations
+and results. Overall, the project demonstrates a practical
+approach to learning and analysing OPC UA behavioural state
+machines through active interaction and network-level observation.
+
+\section*{Acknowledgment}
+
+The author would like to thank the academic supervisors and
+project colleagues for their guidance, technical discussions,
+and support during the implementation and testing of the
+OPC UA learning environment.
+
+\begin{thebibliography}{9}
+
+\bibitem{opcuaoverview}
+OPC Foundation, ``OPC Unified Architecture,'' OPC Foundation.
+[Online]. Available:
+\url{https://opcfoundation.org/about/opc-technologies/opc-ua/}
+
+\bibitem{opcua_part4}
+OPC Foundation, ``OPC Unified Architecture Specification,
+Part 4: Services.'' [Online]. Available:
+\url{https://reference.opcfoundation.org/}
+
+\bibitem{aalpy}
+AALpy Developers, ``AALpy: Active Automata Learning in Python,''
+software project and documentation. [Online]. Available:
+\url{https://github.com/DES-Lab/AALpy}
+
+\bibitem{graphviz}
+J. Ellson, E. Gansner, L. K. and S. North,
+``Graphviz---Open Source Graph Drawing Tools,''
+in \emph{Graph Drawing}, 2002. [Online]. Available:
+\url{https://graphviz.org/}
+
+\bibitem{wireshark}
+Wireshark Foundation, ``Wireshark User's Guide.''
+[Online]. Available:
+\url{https://www.wireshark.org/docs/}
+
+\end{thebibliography}
+
+\balance
+
+\end{document}

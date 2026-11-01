@@ -1,0 +1,51 @@
+digraph "OPC_UA_Python_Validation" {
+    rankdir=LR;
+    bgcolor="white";
+    fontname="Arial";
+    label="OPC UA Learned State Machine\nSecurity: Basic256Sha256 SignAndEncrypt\nAuthentication: Username/password\nAlgorithm: L* (AALpy)";
+    labelloc="t";
+    fontsize=13;
+    node [fontname="Arial", fontsize=10,
+          style=filled, shape=circle,
+          width=1.9, height=1.9];
+    edge [fontname="Arial", fontsize=7];
+
+    __start [shape=none, label="", width=0, height=0];
+    __start -> s0 [label="start"];
+
+    s0 [label="s0\nDisconnected", fillcolor="#FFD54F", color="#F57F17", penwidth=2.5];
+    s1 [label="s1\nConnected\n(fresh session)", fillcolor="#B3E5FC", color="#0277BD", penwidth=2.5];
+    s2 [label="s2\nConnected\n+Browse", fillcolor="#4FC3F7", color="#0277BD", penwidth=2.5];
+    s3 [label="s3\nConnected\n+Subscribed", fillcolor="#80DEEA", color="#00838F", penwidth=2.5];
+    s4 [label="s4\nConnected\n+Browse+Sub", fillcolor="#4DB6AC", color="#00695C", penwidth=2.5];
+    s5 [label="s5\nConnected\n+Sub+Monitor", fillcolor="#80CBC4", color="#00695C", penwidth=2.5];
+    s6 [label="s6\nConnected\n+Browse+Sub+Mon", fillcolor="#26A69A", color="#004D40", penwidth=2.5];
+
+    s0 -> s1 [label="CONNECT/CONNECT_OK", color="#2E7D32", fontcolor="#2E7D32", style="solid", penwidth=2.5];
+    s0 -> s0 [label="DISCONNECT/NOT_CONNECTED\nQUERY_STATE/DISC\nREAD/NOT_CONNECTED\nWRITE/NOT_CONNECTED\nBROWSE/NOT_CONNECTED\nBROWSE_DEEP/NOT_CONNECTED\nGET_STATUS/NOT_CONNECTED\nCREATE_SUB/NOT_CONNECTED\nDELETE_SUB/NOT_CONNECTED\nCREATE_MON/NOT_CONNECTED\nDELETE_MON/NOT_CONNECTED", color="#C62828", fontcolor="#C62828", style="dashed", penwidth=1.0];
+    s1 -> s1 [label="CONNECT/ALREADY_CONNECTED\nQUERY_STATE/STATE_000\nREAD/READ_OK\nWRITE/WRITE_OK\nGET_STATUS/STATUS_OK\nDELETE_SUB/NO_SUB\nCREATE_MON/NO_SUB\nDELETE_MON/NO_SUB", color="#BF360C", fontcolor="#BF360C", style="dashed", penwidth=1.0];
+    s1 -> s0 [label="DISCONNECT/DISCONNECT_OK", color="#1565C0", fontcolor="#1565C0", style="solid", penwidth=2.5];
+    s1 -> s2 [label="BROWSE/BROWSE_OK\nBROWSE_DEEP/BROWSE_DEEP_OK", color="#7B1FA2", fontcolor="#7B1FA2", style="solid", penwidth=2.5];
+    s1 -> s3 [label="CREATE_SUB/CREATE_SUB_OK", color="#00695C", fontcolor="#00695C", style="solid", penwidth=2.5];
+    s2 -> s2 [label="CONNECT/ALREADY_CONNECTED\nQUERY_STATE/STATE_100\nREAD/READ_OK\nWRITE/WRITE_OK\nBROWSE/BROWSE_OK\nBROWSE_DEEP/BROWSE_DEEP_OK\nGET_STATUS/STATUS_OK\nDELETE_SUB/NO_SUB\nCREATE_MON/NO_SUB\nDELETE_MON/NO_SUB", color="#BF360C", fontcolor="#BF360C", style="dashed", penwidth=1.0];
+    s2 -> s0 [label="DISCONNECT/DISCONNECT_OK", color="#1565C0", fontcolor="#1565C0", style="solid", penwidth=2.5];
+    s2 -> s4 [label="CREATE_SUB/CREATE_SUB_OK", color="#00695C", fontcolor="#00695C", style="solid", penwidth=2.5];
+    s3 -> s3 [label="CONNECT/ALREADY_CONNECTED\nQUERY_STATE/STATE_010\nREAD/READ_OK\nWRITE/WRITE_OK\nGET_STATUS/STATUS_OK\nCREATE_SUB/SUB_EXISTS\nDELETE_MON/NO_MON", color="#BF360C", fontcolor="#BF360C", style="dashed", penwidth=1.0];
+    s3 -> s0 [label="DISCONNECT/DISCONNECT_OK", color="#1565C0", fontcolor="#1565C0", style="solid", penwidth=2.5];
+    s3 -> s4 [label="BROWSE/BROWSE_OK\nBROWSE_DEEP/BROWSE_DEEP_OK", color="#7B1FA2", fontcolor="#7B1FA2", style="solid", penwidth=2.5];
+    s3 -> s1 [label="DELETE_SUB/DELETE_SUB_OK", color="#4527A0", fontcolor="#4527A0", style="solid", penwidth=2.5];
+    s3 -> s5 [label="CREATE_MON/CREATE_MON_OK", color="#1A237E", fontcolor="#1A237E", style="solid", penwidth=2.5];
+    s4 -> s4 [label="CONNECT/ALREADY_CONNECTED\nQUERY_STATE/STATE_110\nREAD/READ_OK\nWRITE/WRITE_OK\nBROWSE/BROWSE_OK\nBROWSE_DEEP/BROWSE_DEEP_OK\nGET_STATUS/STATUS_OK\nCREATE_SUB/SUB_EXISTS\nDELETE_MON/NO_MON", color="#BF360C", fontcolor="#BF360C", style="dashed", penwidth=1.0];
+    s4 -> s0 [label="DISCONNECT/DISCONNECT_OK", color="#1565C0", fontcolor="#1565C0", style="solid", penwidth=2.5];
+    s4 -> s2 [label="DELETE_SUB/DELETE_SUB_OK", color="#4527A0", fontcolor="#4527A0", style="solid", penwidth=2.5];
+    s4 -> s6 [label="CREATE_MON/CREATE_MON_OK", color="#1A237E", fontcolor="#1A237E", style="solid", penwidth=2.5];
+    s5 -> s5 [label="CONNECT/ALREADY_CONNECTED\nQUERY_STATE/STATE_011\nREAD/READ_OK\nWRITE/WRITE_OK\nGET_STATUS/STATUS_OK\nCREATE_SUB/SUB_EXISTS\nCREATE_MON/MON_EXISTS", color="#BF360C", fontcolor="#BF360C", style="dashed", penwidth=1.0];
+    s5 -> s0 [label="DISCONNECT/DISCONNECT_OK", color="#1565C0", fontcolor="#1565C0", style="solid", penwidth=2.5];
+    s5 -> s6 [label="BROWSE/BROWSE_OK\nBROWSE_DEEP/BROWSE_DEEP_OK", color="#7B1FA2", fontcolor="#7B1FA2", style="solid", penwidth=2.5];
+    s5 -> s1 [label="DELETE_SUB/DELETE_SUB_OK", color="#4527A0", fontcolor="#4527A0", style="solid", penwidth=2.5];
+    s5 -> s3 [label="DELETE_MON/DELETE_MON_OK", color="#880E4F", fontcolor="#880E4F", style="solid", penwidth=2.5];
+    s6 -> s6 [label="CONNECT/ALREADY_CONNECTED\nQUERY_STATE/STATE_111\nREAD/READ_OK\nWRITE/WRITE_OK\nBROWSE/BROWSE_OK\nBROWSE_DEEP/BROWSE_DEEP_OK\nGET_STATUS/STATUS_OK\nCREATE_SUB/SUB_EXISTS\nCREATE_MON/MON_EXISTS", color="#BF360C", fontcolor="#BF360C", style="dashed", penwidth=1.0];
+    s6 -> s0 [label="DISCONNECT/DISCONNECT_OK", color="#1565C0", fontcolor="#1565C0", style="solid", penwidth=2.5];
+    s6 -> s2 [label="DELETE_SUB/DELETE_SUB_OK", color="#4527A0", fontcolor="#4527A0", style="solid", penwidth=2.5];
+    s6 -> s4 [label="DELETE_MON/DELETE_MON_OK", color="#880E4F", fontcolor="#880E4F", style="solid", penwidth=2.5];
+}

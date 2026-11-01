@@ -1,0 +1,371 @@
+
+digraph OPC_UA_State_Abstraction {
+
+    graph [
+        rankdir=LR,
+        bgcolor="white",
+        pad="0.3",
+        nodesep="0.55",
+        ranksep="0.8",
+        splines=true,
+        labelloc="t",
+        label="OPC UA Behavioral State Abstraction\nAALpy L* / Mealy Machine | Basic256Sha256 | SignAndEncrypt",
+        fontsize=22,
+        fontname="Arial",
+        fontcolor="#17365D"
+    ];
+
+    node [
+        shape=circle,
+        style="rounded,filled",
+        fontname="Arial",
+        fontsize=16,
+        color="#36546F",
+        penwidth=1.5,
+        margin="0.16,0.12"
+    ];
+
+    edge [
+        fontname="Arial",
+        fontsize=12,
+        color="#43566B",
+        fontcolor="#263746",
+        arrowsize=1.5,
+        penwidth=2
+    ];
+
+    start [shape=point, label="", width=0.12];
+
+    DISC [
+        label="DISC\nDisconnected",
+        fillcolor="#FFF0C2",
+        color="#B7791F",
+        penwidth=2
+    ];
+
+    S000 [
+        label="STATE_000\nConnected\nB=0 | S=0 | M=0",
+        fillcolor="#DCEBFA"
+    ];
+
+    S100 [
+        label="STATE_100\nConnected + Browse\nB=1 | S=0 | M=0",
+        fillcolor="#DCEBFA"
+    ];
+
+    S010 [
+        label="STATE_010\nConnected + Subscription\nB=0 | S=1 | M=0",
+        fillcolor="#D6F3F5"
+    ];
+
+    S110 [
+        label="STATE_110\nBrowse + Subscription\nB=1 | S=1 | M=0",
+        fillcolor="#D6F3F5"
+    ];
+
+    S011 [
+        label="STATE_011\nSubscription + Monitor\nB=0 | S=1 | M=1",
+        fillcolor="#EEDCF5"
+    ];
+
+    S111 [
+        label="STATE_111\nBrowse + Subscription + Monitor\nB=1 | S=1 | M=1",
+        fillcolor="#EEDCF5"
+    ];
+
+    start -> DISC [label="initial"];
+
+    // ==========================================
+    // CONNECTION LIFECYCLE
+    // ==========================================
+
+    DISC -> S000 [
+        label="CONNECT / CONNECT_OK",
+        color="#218739",
+        fontcolor="#218739"
+    ];
+
+    DISC -> DISC [
+        label="CONNECT / CONNECT_ERROR",
+        style=dashed,
+        color="#B42318",
+        fontcolor="#B42318"
+    ];
+
+    // Disconnect clears all flags and resources.
+
+    S000 -> DISC [label="DISCONNECT / DISCONNECT_OK", color="#1D65A6"];
+    S100 -> DISC [label="DISCONNECT / DISCONNECT_OK", color="#1D65A6"];
+    S010 -> DISC [label="DISCONNECT / DISCONNECT_OK", color="#1D65A6"];
+    S110 -> DISC [label="DISCONNECT / DISCONNECT_OK", color="#1D65A6"];
+    S011 -> DISC [label="DISCONNECT / DISCONNECT_OK", color="#1D65A6"];
+    S111 -> DISC [label="DISCONNECT / DISCONNECT_OK", color="#1D65A6"];
+
+    // ==========================================
+    // BROWSE OPERATIONS
+    // ==========================================
+
+    S000 -> S100 [
+        label="BROWSE / BROWSE_OK\nBROWSE_DEEP / result",
+        color="#218739"
+    ];
+
+    S010 -> S110 [
+        label="BROWSE / BROWSE_OK\nBROWSE_DEEP / result",
+        color="#218739"
+    ];
+
+    S011 -> S111 [
+        label="BROWSE / BROWSE_OK\nBROWSE_DEEP / result",
+        color="#218739"
+    ];
+
+    // Repeated browsing preserves browse flag.
+
+    S100 -> S100 [
+        label="BROWSE, BROWSE_DEEP / result",
+        style=dashed
+    ];
+
+    S110 -> S110 [
+        label="BROWSE, BROWSE_DEEP / result",
+        style=dashed
+    ];
+
+    S111 -> S111 [
+        label="BROWSE, BROWSE_DEEP / result",
+        style=dashed
+    ];
+
+    // ==========================================
+    // SUBSCRIPTION CREATION
+    // ==========================================
+
+    S000 -> S010 [
+        label="CREATE_SUB / CREATE_SUB_OK",
+        color="#007C78"
+    ];
+
+    S100 -> S110 [
+        label="CREATE_SUB / CREATE_SUB_OK",
+        color="#007C78"
+    ];
+
+    // ==========================================
+    // MONITORED ITEM CREATION
+    // ==========================================
+
+    S010 -> S011 [
+        label="CREATE_MON / CREATE_MON_OK",
+        color="#7B2CBF"
+    ];
+
+    S110 -> S111 [
+        label="CREATE_MON / CREATE_MON_OK",
+        color="#7B2CBF"
+    ];
+
+    // ==========================================
+    // MONITORED ITEM DELETION
+    // ==========================================
+
+    S011 -> S010 [
+        label="DELETE_MON / DELETE_MON_OK",
+        color="#7B2CBF"
+    ];
+
+    S111 -> S110 [
+        label="DELETE_MON / DELETE_MON_OK",
+        color="#7B2CBF"
+    ];
+
+    // ==========================================
+    // SUBSCRIPTION DELETION
+    // Also clears monitored item.
+    // ==========================================
+
+    S010 -> S000 [
+        label="DELETE_SUB / DELETE_SUB_OK",
+        color="#7B2CBF"
+    ];
+
+    S110 -> S100 [
+        label="DELETE_SUB / DELETE_SUB_OK",
+        color="#7B2CBF"
+    ];
+
+    S011 -> S000 [
+        label="DELETE_SUB / DELETE_SUB_OK",
+        color="#7B2CBF"
+    ];
+
+    S111 -> S100 [
+        label="DELETE_SUB / DELETE_SUB_OK",
+        color="#7B2CBF"
+    ];
+
+    // ==========================================
+    // CONNECT WHILE ALREADY CONNECTED
+    // ==========================================
+
+    S000 -> S000 [
+        label="CONNECT / ALREADY_CONNECTED",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    S100 -> S100 [
+        label="CONNECT / ALREADY_CONNECTED",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    S010 -> S010 [
+        label="CONNECT / ALREADY_CONNECTED",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    S110 -> S110 [
+        label="CONNECT / ALREADY_CONNECTED",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    S011 -> S011 [
+        label="CONNECT / ALREADY_CONNECTED",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    S111 -> S111 [
+        label="CONNECT / ALREADY_CONNECTED",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    // ==========================================
+    // SUBSCRIPTION ALREADY EXISTS
+    // ==========================================
+
+    S010 -> S010 [
+        label="CREATE_SUB / SUB_EXISTS",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    S110 -> S110 [
+        label="CREATE_SUB / SUB_EXISTS",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    S011 -> S011 [
+        label="CREATE_SUB / SUB_EXISTS",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    S111 -> S111 [
+        label="CREATE_SUB / SUB_EXISTS",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    // ==========================================
+    // MONITORED ITEM GUARDS
+    // ==========================================
+
+    // No subscription: CREATE_MON and DELETE_MON
+    // both return NO_SUB.
+
+    S000 -> S000 [
+        label="CREATE_MON, DELETE_MON / NO_SUB",
+        style=dotted,
+        color="#B42318"
+    ];
+
+    S100 -> S100 [
+        label="CREATE_MON, DELETE_MON / NO_SUB",
+        style=dotted,
+        color="#B42318"
+    ];
+
+    // Subscription exists but no monitored item.
+
+    S010 -> S010 [
+        label="CREATE_MON / MON_EXISTS? NO\nDELETE_MON / NO_MON",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    S110 -> S110 [
+        label="CREATE_MON / MON_EXISTS? NO\nDELETE_MON / NO_MON",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    // Monitored item already exists.
+
+    S011 -> S011 [
+        label="CREATE_MON / MON_EXISTS",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    S111 -> S111 [
+        label="CREATE_MON / MON_EXISTS",
+        style=dotted,
+        color="#B7791F"
+    ];
+
+    // ==========================================
+    // QUERY_STATE AND NORMAL OPERATIONS
+    // ==========================================
+
+    S000 -> S000 [
+        label="QUERY_STATE / STATE_000\nREAD, WRITE, GET_STATUS / result",
+        style=dashed
+    ];
+
+    S100 -> S100 [
+        label="QUERY_STATE / STATE_100\nREAD, WRITE, GET_STATUS / result",
+        style=dashed
+    ];
+
+    S010 -> S010 [
+        label="QUERY_STATE / STATE_010\nREAD, WRITE, GET_STATUS / result",
+        style=dashed
+    ];
+
+    S110 -> S110 [
+        label="QUERY_STATE / STATE_110\nREAD, WRITE, GET_STATUS / result",
+        style=dashed
+    ];
+
+    S011 -> S011 [
+        label="QUERY_STATE / STATE_011\nREAD, WRITE, GET_STATUS / result",
+        style=dashed
+    ];
+
+    S111 -> S111 [
+        label="QUERY_STATE / STATE_111\nREAD, WRITE, GET_STATUS / result",
+        style=dashed
+    ];
+
+    // ==========================================
+    // DISCONNECTED OPERATION GUARDS
+    // ==========================================
+
+    DISC -> DISC [
+        label="QUERY_STATE / DISC\nDISCONNECT / NOT_CONNECTED",
+        style=dashed,
+        color="#B42318"
+    ];
+
+    DISC -> DISC [
+        label="READ, WRITE, BROWSE,\nGET_STATUS, CREATE_SUB,\nCREATE_MON / NOT_CONNECTED",
+        style=dashed,
+        color="#B42318"
+    ];
+}

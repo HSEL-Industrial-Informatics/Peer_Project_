@@ -1,0 +1,16 @@
+digraph "OPC_UA_Final_State_Machine" {
+    rankdir=LR;
+    bgcolor="white";
+    fontname="Arial";
+    node [fontname="Arial", fontsize=12,
+          style=filled, shape=circle,
+          width=1.8, height=1.8];
+    edge [fontname="Arial", fontsize=9];
+
+    __start [shape=none, label="", width=0, height=0];
+    __start -> s0 [label="start"];
+
+    s0 [label="s0\nDisconnected", fillcolor="#FFD54F", color="#F57F17", penwidth=2];
+
+    s0 -> s0 [label="CONNECT/CONNECT_ERROR\nDISCONNECT/NOT_CONNECTED\nREAD/NOT_CONNECTED\nWRITE/NOT_CONNECTED\nBROWSE/NOT_CONNECTED\nCREATE_SUB/NOT_CONNECTED\nDELETE_SUB/NOT_CONNECTED", color="#666666", fontcolor="#666666", style="dashed", penwidth=1.5];
+}

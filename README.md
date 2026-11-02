@@ -16,7 +16,7 @@ The project investigates how OPC UA protocol behaviour can be
 represented as a finite-state model using network-traffic analysis and
 automata-learning techniques.
 
-<img src="<img src="image-url.png" alt="Alt text" width="500">
+<img src="<img src="Images/Architecture.png" alt="Alt text" width="500">
 " alt="Alt text" width="500">
 
 

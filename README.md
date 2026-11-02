@@ -265,4 +265,4 @@ Useful starting points:
 Protocol from Network Traces\
 **Institution:** Hochschule Emden/Leer
 
-<img src="download (4).png" alt="Alt text" width="150">
+<img src="hsel_logo.png" alt="Alt text" width="150">

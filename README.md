@@ -16,7 +16,7 @@ The project investigates how OPC UA protocol behaviour can be
 represented as a finite-state model using network-traffic analysis and
 automata-learning techniques.
 
-<img src="Images/Architecture.png" alt="Alt text" width="900">
+<img src="Images/Architecture.png" alt="Alt text" width="1100">
 
 
 The proposed workflow includes:
@@ -257,10 +257,12 @@ Useful starting points:
 ------------------------------------------------------------------------
 
 | Project Supervisor | Prof. Patrick Felke | Hochschule Emden/Leer |
+
 | Project Supervisor | Mr. Heiko Schoon | Hochschule Emden/Leer |
 
-**Author:** Altaf Ahmad And Raja Jawad Ali\
+**Author:** Altaf Ahmad | Raja Jawad Ali\
 **Project:** Protocol Inference and State Machine Learning of the OPC UA
 Protocol from Network Traces\
 **Institution:** Hochschule Emden/Leer
-<img src="download (4).png" alt="Alt text" width="100">
+
+<img src="download (4).png" alt="Alt text" width="150">

@@ -256,8 +256,11 @@ Useful starting points:
 
 ------------------------------------------------------------------------
 
+| Project Supervisor | Prof. Patrick Felke | Hochschule Emden/Leer |
+| Project Supervisor | Mr. Heiko Schoon | Hochschule Emden/Leer |
+
 **Author:** Altaf Ahmad And Raja Jawad Ali\
 **Project:** Protocol Inference and State Machine Learning of the OPC UA
 Protocol from Network Traces\
 **Institution:** Hochschule Emden/Leer
-<img src="download(4).png" alt="Alt text" width="100">
+<img src="download (4).png" alt="Alt text" width="100">

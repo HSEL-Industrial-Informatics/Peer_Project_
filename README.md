@@ -3,7 +3,7 @@
 **Project:** Peer Project (10 CP)\
 **Institution:** Hochschule Emden/Leer\
 **Programme:** M.Sc. Industrial Informatics\
-**Proposal date:** 18 November 2025
+
 
 ## 1. Overview
 

@@ -16,6 +16,10 @@ The project investigates how OPC UA protocol behaviour can be
 represented as a finite-state model using network-traffic analysis and
 automata-learning techniques.
 
+<img src="<img src="image-url.png" alt="Alt text" width="500">
+" alt="Alt text" width="500">
+
+
 The proposed workflow includes:
 
 1.  Establishing a controlled OPC UA client/server test environment.
@@ -70,15 +74,13 @@ table to reflect the final setup.
   Wireshark                           Network traffic capture and
                                       inspection
 
-  TShark                              Command-line packet extraction
-
   Scapy / PyShark                     Python packet processing, where
                                       used
 
   Graphviz                            State-machine visualisation
   -----------------------------------------------------------------------
 
-### Security configuration
+### 4. Security configuration
 
 Some experiments use **Basic256Sha256** with **SignAndEncrypt**,
 certificate-based secure-channel configuration, and username
@@ -90,47 +92,6 @@ available. Record which captures are encrypted and which fields can
 actually be decoded. Do not assume service names can be recovered from
 encrypted payloads.
 
-## 4. Suggested Repository Structure
-
-``` text
-opcua-protocol-inference/
-├── README.md
-├── LICENSE
-├── .gitignore
-├── docs/
-│   ├── project-proposal.pdf
-│   ├── project-report.pdf
-│   ├── requirements.md
-│   ├── experimental-setup.md
-│   └── methodology.md
-├── captures/
-│   ├── README.md
-│   ├── raw/
-│   └── processed/
-├── src/
-│   ├── capture/
-│   ├── extraction/
-│   ├── preprocessing/
-│   ├── abstraction/
-│   ├── passive_learning/
-│   ├── active_learning/
-│   └── validation/
-├── models/
-│   ├── passive/
-│   ├── active/
-│   └── comparison/
-├── results/
-│   ├── figures/
-│   ├── tables/
-│   ├── logs/
-│   └── analysis/
-├── tests/
-├── requirements.txt
-└── environment.yml
-```
-
-This is a suggested layout. Keep only directories and files that are
-actually part of the repository.
 
 ## 5. Methodology
 
@@ -244,29 +205,7 @@ Possible evaluation criteria:
 -   Whether differences arise from abstraction, encryption, missing
     traces, or server-specific behaviour.
 
-## 6. Existing Active-Learning Work
-
-The existing active-learning work has explored:
-
--   A Python OPC UA client harness using `asyncua`.
--   AALpy's L\* learning algorithm and Mealy-machine models.
--   Abstract operations including `CONNECT`, `DISCONNECT`, `READ`,
-    `WRITE`, `BROWSE`, `CREATE_SUB`, `DELETE_SUB`, `CREATE_MON`, and
-    `DELETE_MON`.
--   Basic256Sha256 SignAndEncrypt and username authentication in the
-    secure test configuration.
--   Connection recovery after an interruption observed in the Prosys
-    test environment.
--   Graphviz generation of the learned state-machine diagram.
--   Validation experiments using a separate OPC UA server.
-
-The current abstract state representation uses connection and operation
-flags, including browse completion, subscription existence, and
-monitored-item existence. Interpret the learned states within this
-abstraction and experimental setup; they are not a complete formal model
-of every OPC UA implementation.
-
-## 7. Network Traffic Analysis
+## 6. Network Traffic Analysis
 
 Store packet-analysis scripts and outputs separately from raw captures.
 
@@ -284,46 +223,8 @@ parser-recognised entries. These are results from that particular run,
 not total network packet counts. Re-run the analysis and update the
 figures if the input captures or parser change.
 
-## 8. Reproducibility
 
-For reproducibility:
-
-1.  Record Python and package versions.
-2.  Include installation instructions and dependency files.
-3.  Document server endpoint configuration without publishing
-    credentials.
-4.  Store scenario definitions and capture metadata.
-5.  Keep raw captures unchanged and write processed outputs separately.
-6.  Record commands and configuration used for each run.
-7.  Separate training traces from validation traces.
-8.  Document random seeds and learning limits where supported.
-
-Example environment setup:
-
-``` bash
-python -m venv .venv
-pip install -r requirements.txt
-```
-
-Add the actual execution commands for project scripts once their
-filenames and arguments are finalised.
-
-## 9. Results and Artifacts
-
-Add links to actual outputs as they become available.
-
-  Result                            Suggested location          Status
-  --------------------------------- --------------------------- -------------------
-  Raw PCAP/PCAPNG captures          `captures/raw/`             To be added
-  Processed packet/message data     `captures/processed/`       To be added
-  Message-abstraction definitions   `src/abstraction/`          To be added
-  Passive inferred model            `models/passive/`           To be added
-  Active AALpy model                `models/active/`            Add final files
-  Graphviz source and diagrams      `results/figures/`          Add final files
-  Evaluation and comparison         `results/analysis/`         To be added
-  Final report                      `docs/project-report.pdf`   Add final version
-
-## 10. Limitations to Consider
+## 7. Limitations to Consider
 
 -   PCAP traces show only interactions that were captured; they do not
     automatically cover all possible protocol behaviours.
@@ -335,12 +236,12 @@ Add links to actual outputs as they become available.
     incomplete or begin mid-session.
 -   A passive model may overfit observed traces if there are
     insufficient examples or no held-out validation data.
--   An active-learning model depends on the harness, reset behaviour,
+-   An active learning model depends on the harness, reset behaviour,
     output abstraction, and equivalence-testing strategy.
--   Server-specific behaviour should not be presented as a universal OPC
+-   Server specific behaviour should not be presented as a universal OPC
     UA protocol requirement.
 
-## 11. References
+## 8. References
 
 Useful starting points:
 
@@ -352,43 +253,12 @@ Useful starting points:
 -   Graphviz documentation: https://graphviz.org/documentation/
 -   `asyncua` Python library: https://github.com/FreeOpcUa/opcua-asyncio
 
-Add complete bibliographic references to the final report and cite
-sources where their technical content is used.
 
-## 12. Data and Security Notice
-
-Before pushing files to a public GitHub repository:
-
--   Remove passwords, private keys, and certificates containing private
-    material.
--   Check PCAP files for credentials, sensitive endpoint information,
-    and confidential data.
--   Review logs and configuration files for secrets.
--   Confirm permission to publish captures and project material.
--   Consider Git LFS or an external research-data repository for large
-    PCAP files.
--   Do not commit virtual environments, caches, or temporary files that
-    can be recreated.
-
-## 13. Project Status
-
-Update this checklist as implementation progresses.
-
--   [x] OPC UA test environment established
--   [x] Active-learning harness developed
--   [x] AALpy integration explored
--   [x] Active model visualisation generated
--   [x] Wireshark traffic analysis performed
--   [ ] Fully documented PCAP-to-message extraction pipeline
--   [ ] Message abstraction derived and documented from PCAP
--   [ ] Passive state-machine inference from recorded traces
--   [ ] Held-out trace validation of passive model
--   [ ] Comparison of passive and active models
--   [ ] Final reproducibility and security review
 
 ------------------------------------------------------------------------
 
-**Author:** Altaf Ahmad\
+**Author:** Altaf Ahmad And Raja Jawad Ali\
 **Project:** Protocol Inference and State Machine Learning of the OPC UA
 Protocol from Network Traces\
 **Institution:** Hochschule Emden/Leer
+<img src="https://de.wikipedia.org/wiki/Datei:HS_EmdenLeer_Logo.svg" alt="Alt text" width="500">

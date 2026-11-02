@@ -260,4 +260,4 @@ Useful starting points:
 **Project:** Protocol Inference and State Machine Learning of the OPC UA
 Protocol from Network Traces\
 **Institution:** Hochschule Emden/Leer
-<img src="https://de.wikipedia.org/wiki/Datei:HS_EmdenLeer_Logo.svg" alt="Alt text" width="500">
+<img src="download(4).png" alt="Alt text" width="100">
